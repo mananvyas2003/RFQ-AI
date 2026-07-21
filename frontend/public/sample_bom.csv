@@ -1,0 +1,11 @@
+Reference,Qty,Value,MPN,Manufacturer,Description
+U1,1,ATmega328,ATMEGA328P-AU,Microchip,8-bit AVR microcontroller
+U2,1,555,NE555,Texas Instruments,Timer IC
+R1-R10,10,10K,RC0603FR-0710KL,Yageo,Resistor 10K 0603
+C1-C20,20,0.1uF,,,0.1uF 0603 ceramic capacitor
+D1-D4,4,1N4007,,,Rectifier diode 1N4007
+U3,1,AMS1117,AMS1117-3.3,,3.3V LDO regulator
+J1-J2,2,Header,,,40 pin male header 2.54mm
+LED1-LED8,8,WS2812,WS2812B,Worldsemi,Addressable RGB LED
+U4,2,LM358,lm358,TI,Dual op-amp
+U5,1,STM32,STM32F103C8T6,ST,ARM Cortex-M3 MCU

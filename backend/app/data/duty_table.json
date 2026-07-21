@@ -1,0 +1,26 @@
+{
+  "_note": "Representative import-duty rates by destination country and HS4 code. NOT legally binding. Rates are basic customs duty as a fraction of customs value. 'default' applies when a specific HS4 is not listed.",
+  "IN": {
+    "default": 0.10,
+    "8542": 0.0,
+    "8541": 0.10,
+    "8533": 0.10,
+    "8532": 0.10,
+    "8536": 0.10,
+    "8504": 0.075
+  },
+  "US": {
+    "default": 0.0,
+    "8542": 0.0,
+    "8541": 0.0,
+    "8533": 0.0
+  },
+  "GB": {
+    "default": 0.02,
+    "8542": 0.0
+  },
+  "DE": {
+    "default": 0.037,
+    "8542": 0.0
+  }
+}

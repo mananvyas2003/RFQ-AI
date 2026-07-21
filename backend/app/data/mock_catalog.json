@@ -1,0 +1,137 @@
+{
+  "_note": "Mixed-source mock catalog for the RFQ-AI MVP. Global distributors quote in USD (imported into India, may attract duty); Indian distributors quote in INR (domestic, no import duty). Real providers (Nexar/Shopify/WooCommerce) return the same offer shape.",
+  "parts": [
+    {
+      "mpn": "RC0603FR-0710KL",
+      "manufacturer": "Yageo",
+      "description": "RES 10K OHM 1% 1/10W 0603",
+      "category": "Resistor",
+      "hs_code": "8533",
+      "aliases": ["10K 0603", "10K OHM 0603", "RES 10K 0603", "0603 10K", "10K RESISTOR"],
+      "offers": [
+        {"distributor": "LCSC", "access_method": "official_api", "region": "CN", "country_of_origin": "CN", "currency": "USD", "stock": 500000, "lead_time_days": 12, "moq": 10, "packaging": "Cut Tape", "price_breaks": [{"qty": 10, "unit_price": 0.003}, {"qty": 100, "unit_price": 0.0012}, {"qty": 1000, "unit_price": 0.0007}]},
+        {"distributor": "Digi-Key", "access_method": "official_api", "region": "US", "country_of_origin": "TW", "currency": "USD", "stock": 200000, "lead_time_days": 4, "moq": 1, "packaging": "Cut Tape", "price_breaks": [{"qty": 1, "unit_price": 0.10}, {"qty": 10, "unit_price": 0.034}, {"qty": 100, "unit_price": 0.017}, {"qty": 1000, "unit_price": 0.010}]},
+        {"distributor": "Robu.in", "access_method": "woocommerce", "region": "IN", "country_of_origin": "IN", "currency": "INR", "stock": 4000, "lead_time_days": 3, "moq": 1, "packaging": "Strip", "price_breaks": [{"qty": 1, "unit_price": 1.0}, {"qty": 10, "unit_price": 0.80}, {"qty": 50, "unit_price": 0.60}]},
+        {"distributor": "Robocraze", "access_method": "shopify", "region": "IN", "country_of_origin": "IN", "currency": "INR", "stock": 2500, "lead_time_days": 4, "moq": 1, "packaging": "Strip", "price_breaks": [{"qty": 1, "unit_price": 1.5}, {"qty": 10, "unit_price": 1.0}, {"qty": 100, "unit_price": 0.70}]}
+      ]
+    },
+    {
+      "mpn": "GRM188R71C104KA01D",
+      "manufacturer": "Murata",
+      "description": "CAP CER 0.1UF 16V X7R 0603",
+      "category": "Capacitor",
+      "hs_code": "8532",
+      "aliases": ["0.1UF 0603", "100NF 0603", "CAP 0.1UF 0603", "104 0603", "0.1UF CAPACITOR"],
+      "offers": [
+        {"distributor": "LCSC", "access_method": "official_api", "region": "CN", "country_of_origin": "CN", "currency": "USD", "stock": 800000, "lead_time_days": 12, "moq": 10, "packaging": "Cut Tape", "price_breaks": [{"qty": 10, "unit_price": 0.004}, {"qty": 100, "unit_price": 0.0018}, {"qty": 1000, "unit_price": 0.0011}]},
+        {"distributor": "Mouser", "access_method": "official_api", "region": "US", "country_of_origin": "JP", "currency": "USD", "stock": 150000, "lead_time_days": 5, "moq": 1, "packaging": "Cut Tape", "price_breaks": [{"qty": 1, "unit_price": 0.11}, {"qty": 10, "unit_price": 0.045}, {"qty": 100, "unit_price": 0.022}, {"qty": 1000, "unit_price": 0.013}]},
+        {"distributor": "Sunrom", "access_method": "woocommerce", "region": "IN", "country_of_origin": "IN", "currency": "INR", "stock": 3000, "lead_time_days": 3, "moq": 1, "packaging": "Strip", "price_breaks": [{"qty": 1, "unit_price": 1.2}, {"qty": 10, "unit_price": 0.90}, {"qty": 100, "unit_price": 0.65}]}
+      ]
+    },
+    {
+      "mpn": "ATMEGA328P-AU",
+      "manufacturer": "Microchip",
+      "description": "MCU 8BIT AVR 32KB FLASH TQFP32",
+      "category": "Microcontroller",
+      "hs_code": "8542",
+      "aliases": ["ATMEGA328P", "ATMEGA328", "328P", "ATMEGA328P-AU", "ATMEGA 328"],
+      "offers": [
+        {"distributor": "Digi-Key", "access_method": "official_api", "region": "US", "country_of_origin": "TH", "currency": "USD", "stock": 12000, "lead_time_days": 4, "moq": 1, "packaging": "Tray", "price_breaks": [{"qty": 1, "unit_price": 2.35}, {"qty": 10, "unit_price": 2.10}, {"qty": 100, "unit_price": 1.85}]},
+        {"distributor": "LCSC", "access_method": "official_api", "region": "CN", "country_of_origin": "TH", "currency": "USD", "stock": 8000, "lead_time_days": 14, "moq": 1, "packaging": "Tray", "price_breaks": [{"qty": 1, "unit_price": 1.95}, {"qty": 10, "unit_price": 1.72}, {"qty": 100, "unit_price": 1.55}]},
+        {"distributor": "Robu.in", "access_method": "woocommerce", "region": "IN", "country_of_origin": "IN", "currency": "INR", "stock": 350, "lead_time_days": 3, "moq": 1, "packaging": "Tube", "price_breaks": [{"qty": 1, "unit_price": 210.0}, {"qty": 10, "unit_price": 195.0}, {"qty": 50, "unit_price": 180.0}]},
+        {"distributor": "Robocraze", "access_method": "shopify", "region": "IN", "country_of_origin": "IN", "currency": "INR", "stock": 200, "lead_time_days": 4, "moq": 1, "packaging": "Tube", "price_breaks": [{"qty": 1, "unit_price": 225.0}, {"qty": 10, "unit_price": 205.0}]}
+      ]
+    },
+    {
+      "mpn": "STM32F103C8T6",
+      "manufacturer": "STMicroelectronics",
+      "description": "MCU ARM CORTEX-M3 64KB LQFP48",
+      "category": "Microcontroller",
+      "hs_code": "8542",
+      "aliases": ["STM32F103C8", "STM32F103", "BLUEPILL", "STM32F103C8T6", "STM32 F103"],
+      "offers": [
+        {"distributor": "LCSC", "access_method": "official_api", "region": "CN", "country_of_origin": "CN", "currency": "USD", "stock": 20000, "lead_time_days": 12, "moq": 1, "packaging": "Tray", "price_breaks": [{"qty": 1, "unit_price": 1.60}, {"qty": 10, "unit_price": 1.42}, {"qty": 100, "unit_price": 1.28}]},
+        {"distributor": "Arrow", "access_method": "official_api", "region": "US", "country_of_origin": "MY", "currency": "USD", "stock": 5000, "lead_time_days": 6, "moq": 1, "packaging": "Tray", "price_breaks": [{"qty": 1, "unit_price": 3.10}, {"qty": 10, "unit_price": 2.80}, {"qty": 100, "unit_price": 2.45}]},
+        {"distributor": "Robu.in", "access_method": "woocommerce", "region": "IN", "country_of_origin": "IN", "currency": "INR", "stock": 500, "lead_time_days": 3, "moq": 1, "packaging": "Tube", "price_breaks": [{"qty": 1, "unit_price": 250.0}, {"qty": 10, "unit_price": 230.0}, {"qty": 50, "unit_price": 210.0}]}
+      ]
+    },
+    {
+      "mpn": "NE555P",
+      "manufacturer": "Texas Instruments",
+      "description": "IC OSC SINGLE TIMER 100KHZ PDIP-8",
+      "category": "IC",
+      "hs_code": "8542",
+      "aliases": ["NE555", "555 TIMER", "555", "NE555P", "TIMER 555"],
+      "offers": [
+        {"distributor": "Digi-Key", "access_method": "official_api", "region": "US", "country_of_origin": "MX", "currency": "USD", "stock": 90000, "lead_time_days": 4, "moq": 1, "packaging": "Tube", "price_breaks": [{"qty": 1, "unit_price": 0.52}, {"qty": 10, "unit_price": 0.40}, {"qty": 100, "unit_price": 0.28}]},
+        {"distributor": "LCSC", "access_method": "official_api", "region": "CN", "country_of_origin": "CN", "currency": "USD", "stock": 60000, "lead_time_days": 12, "moq": 1, "packaging": "Tube", "price_breaks": [{"qty": 1, "unit_price": 0.18}, {"qty": 10, "unit_price": 0.12}, {"qty": 100, "unit_price": 0.08}]},
+        {"distributor": "Sunrom", "access_method": "woocommerce", "region": "IN", "country_of_origin": "IN", "currency": "INR", "stock": 1200, "lead_time_days": 3, "moq": 1, "packaging": "Tube", "price_breaks": [{"qty": 1, "unit_price": 12.0}, {"qty": 10, "unit_price": 9.5}, {"qty": 100, "unit_price": 7.0}]}
+      ]
+    },
+    {
+      "mpn": "LM358DR",
+      "manufacturer": "Texas Instruments",
+      "description": "IC OPAMP GP 2 CIRCUIT SOIC-8",
+      "category": "IC",
+      "hs_code": "8542",
+      "aliases": ["LM358", "LM358D", "DUAL OPAMP", "LM358DR", "OP AMP LM358"],
+      "offers": [
+        {"distributor": "Mouser", "access_method": "official_api", "region": "US", "country_of_origin": "CN", "currency": "USD", "stock": 70000, "lead_time_days": 5, "moq": 1, "packaging": "Cut Tape", "price_breaks": [{"qty": 1, "unit_price": 0.34}, {"qty": 10, "unit_price": 0.24}, {"qty": 100, "unit_price": 0.16}]},
+        {"distributor": "LCSC", "access_method": "official_api", "region": "CN", "country_of_origin": "CN", "currency": "USD", "stock": 120000, "lead_time_days": 12, "moq": 10, "packaging": "Cut Tape", "price_breaks": [{"qty": 10, "unit_price": 0.06}, {"qty": 100, "unit_price": 0.04}, {"qty": 1000, "unit_price": 0.03}]},
+        {"distributor": "Robu.in", "access_method": "woocommerce", "region": "IN", "country_of_origin": "IN", "currency": "INR", "stock": 900, "lead_time_days": 3, "moq": 1, "packaging": "Strip", "price_breaks": [{"qty": 1, "unit_price": 9.0}, {"qty": 10, "unit_price": 7.0}, {"qty": 100, "unit_price": 5.0}]}
+      ]
+    },
+    {
+      "mpn": "AMS1117-3.3",
+      "manufacturer": "Advanced Monolithic Systems",
+      "description": "IC REG LINEAR 3.3V 1A SOT-223",
+      "category": "Voltage Regulator",
+      "hs_code": "8542",
+      "aliases": ["AMS1117", "1117 3.3", "LDO 3.3V", "AMS1117-3.3", "AMS1117 3V3"],
+      "offers": [
+        {"distributor": "LCSC", "access_method": "official_api", "region": "CN", "country_of_origin": "CN", "currency": "USD", "stock": 300000, "lead_time_days": 12, "moq": 10, "packaging": "Cut Tape", "price_breaks": [{"qty": 10, "unit_price": 0.05}, {"qty": 100, "unit_price": 0.035}, {"qty": 1000, "unit_price": 0.025}]},
+        {"distributor": "Digi-Key", "access_method": "official_api", "region": "US", "country_of_origin": "CN", "currency": "USD", "stock": 40000, "lead_time_days": 4, "moq": 1, "packaging": "Cut Tape", "price_breaks": [{"qty": 1, "unit_price": 0.60}, {"qty": 10, "unit_price": 0.45}, {"qty": 100, "unit_price": 0.30}]},
+        {"distributor": "Robocraze", "access_method": "shopify", "region": "IN", "country_of_origin": "IN", "currency": "INR", "stock": 1500, "lead_time_days": 4, "moq": 1, "packaging": "Strip", "price_breaks": [{"qty": 1, "unit_price": 8.0}, {"qty": 10, "unit_price": 6.0}, {"qty": 100, "unit_price": 4.5}]}
+      ]
+    },
+    {
+      "mpn": "1N4007",
+      "manufacturer": "Diodes Incorporated",
+      "description": "DIODE GEN PURPOSE 1000V 1A DO-41",
+      "category": "Diode",
+      "hs_code": "8541",
+      "aliases": ["1N4007", "IN4007", "DIODE 1N4007", "1N4007 DIODE", "RECTIFIER 1N4007"],
+      "offers": [
+        {"distributor": "LCSC", "access_method": "official_api", "region": "CN", "country_of_origin": "CN", "currency": "USD", "stock": 400000, "lead_time_days": 12, "moq": 10, "packaging": "Ammo Pack", "price_breaks": [{"qty": 10, "unit_price": 0.01}, {"qty": 100, "unit_price": 0.006}, {"qty": 1000, "unit_price": 0.004}]},
+        {"distributor": "Mouser", "access_method": "official_api", "region": "US", "country_of_origin": "CN", "currency": "USD", "stock": 100000, "lead_time_days": 5, "moq": 1, "packaging": "Tape & Reel", "price_breaks": [{"qty": 1, "unit_price": 0.14}, {"qty": 10, "unit_price": 0.08}, {"qty": 100, "unit_price": 0.04}]},
+        {"distributor": "Sunrom", "access_method": "woocommerce", "region": "IN", "country_of_origin": "IN", "currency": "INR", "stock": 5000, "lead_time_days": 3, "moq": 1, "packaging": "Strip", "price_breaks": [{"qty": 1, "unit_price": 1.5}, {"qty": 10, "unit_price": 1.1}, {"qty": 100, "unit_price": 0.80}]}
+      ]
+    },
+    {
+      "mpn": "PLS-40",
+      "manufacturer": "Generic",
+      "description": "CONN HEADER MALE 40POS 2.54MM",
+      "category": "Connector",
+      "hs_code": "8536",
+      "aliases": ["HEADER 2.54", "BERG STRIP", "1X40 HEADER", "MALE HEADER 40", "40 PIN HEADER", "PLS-40"],
+      "offers": [
+        {"distributor": "LCSC", "access_method": "official_api", "region": "CN", "country_of_origin": "CN", "currency": "USD", "stock": 50000, "lead_time_days": 12, "moq": 5, "packaging": "Bulk", "price_breaks": [{"qty": 5, "unit_price": 0.09}, {"qty": 50, "unit_price": 0.06}, {"qty": 500, "unit_price": 0.045}]},
+        {"distributor": "Robu.in", "access_method": "woocommerce", "region": "IN", "country_of_origin": "IN", "currency": "INR", "stock": 3000, "lead_time_days": 3, "moq": 1, "packaging": "Bulk", "price_breaks": [{"qty": 1, "unit_price": 12.0}, {"qty": 10, "unit_price": 9.0}, {"qty": 100, "unit_price": 6.5}]},
+        {"distributor": "Robocraze", "access_method": "shopify", "region": "IN", "country_of_origin": "IN", "currency": "INR", "stock": 2000, "lead_time_days": 4, "moq": 1, "packaging": "Bulk", "price_breaks": [{"qty": 1, "unit_price": 15.0}, {"qty": 10, "unit_price": 11.0}]}
+      ]
+    },
+    {
+      "mpn": "WS2812B",
+      "manufacturer": "Worldsemi",
+      "description": "LED RGB ADDRESSABLE 5050 SMD",
+      "category": "LED",
+      "hs_code": "8541",
+      "aliases": ["WS2812", "WS2812B", "NEOPIXEL", "RGB LED WS2812", "ADDRESSABLE LED"],
+      "offers": [
+        {"distributor": "LCSC", "access_method": "official_api", "region": "CN", "country_of_origin": "CN", "currency": "USD", "stock": 200000, "lead_time_days": 12, "moq": 10, "packaging": "Cut Tape", "price_breaks": [{"qty": 10, "unit_price": 0.05}, {"qty": 100, "unit_price": 0.035}, {"qty": 1000, "unit_price": 0.025}]},
+        {"distributor": "Digi-Key", "access_method": "official_api", "region": "US", "country_of_origin": "CN", "currency": "USD", "stock": 30000, "lead_time_days": 4, "moq": 1, "packaging": "Cut Tape", "price_breaks": [{"qty": 1, "unit_price": 0.35}, {"qty": 10, "unit_price": 0.28}, {"qty": 100, "unit_price": 0.20}]},
+        {"distributor": "Robu.in", "access_method": "woocommerce", "region": "IN", "country_of_origin": "IN", "currency": "INR", "stock": 800, "lead_time_days": 3, "moq": 1, "packaging": "Strip", "price_breaks": [{"qty": 1, "unit_price": 18.0}, {"qty": 10, "unit_price": 14.0}, {"qty": 100, "unit_price": 10.0}]}
+      ]
+    }
+  ]
+}

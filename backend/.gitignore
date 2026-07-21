@@ -1,0 +1,12 @@
+# Secrets & local config
+.env
+stores.json
+
+# Local database
+*.db
+rfq_ai.db
+
+# Python
+.venv/
+__pycache__/
+*.pyc

@@ -1,0 +1,22 @@
+{
+  "_note": "Copy to stores.json, fill in real credentials the distributor issued you, then set STORES_CONFIG=stores.json in .env. Only stores listed here are ever queried (consent-first).",
+  "shopify": [
+    {
+      "name": "Robocraze",
+      "base_url": "https://your-store.myshopify.com",
+      "access_token": "shpat_xxxxxxxxxxxxxxxxxxxxxxxx",
+      "region": "IN",
+      "currency": "INR"
+    }
+  ],
+  "woocommerce": [
+    {
+      "name": "Robu.in",
+      "base_url": "https://robu.in",
+      "consumer_key": "ck_xxxxxxxxxxxxxxxxxxxxxxxx",
+      "consumer_secret": "cs_xxxxxxxxxxxxxxxxxxxxxxxx",
+      "region": "IN",
+      "currency": "INR"
+    }
+  ]
+}
