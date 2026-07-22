@@ -1,9 +1,10 @@
 """Sourcing optimizer: turns matched parts + offers into an optimized BOM.
 
-Ranks offers on true landed cost (price + shipping + duty), so a cheaper
-import that attracts duty can lose to a local Indian offer. Supports two
-objectives: cost (minimize landed cost) and time (minimize lead time).
-Ranking is neutral - no affiliate bias.
+Ranks offers on true non-recoverable landed cost (CIF + BCD + SWS for imports;
+GST-exclusive net + shipping for domestic). Recoverable GST/IGST is reported
+separately and excluded from ranking so buy-local vs import is not tax-biased.
+Supports two objectives: cost (minimize landed cost) and time (minimize lead
+time). Ranking is neutral - no affiliate bias.
 """
 from __future__ import annotations
 
@@ -70,7 +71,14 @@ def _evaluate(offer: Offer, required_qty: int, destination_country: str) -> Sour
         line_cost_inr = unit_inr * purchase_qty
 
         duty = compute_duty(offer, destination_country, line_cost_inr)
-        landed = line_cost_inr + duty.duty_amount_inr + duty.shipping_inr
+        if duty.is_domestic:
+            # GST-inclusive prices are de-grossed; only net + shipping ranks.
+            net_goods = duty.customs_value_inr - duty.recoverable_tax_inr
+            landed = net_goods + duty.shipping_inr
+        else:
+            # CIF already includes freight + insurance; add non-recoverable BCD+SWS.
+            # IGST (recoverable_tax_inr) is excluded from ranking.
+            landed = duty.assessable_value_cif + duty.duty_amount_inr
 
         in_stock = offer.stock >= purchase_qty
         effective_lead = offer.lead_time_days + (0 if in_stock else _BACKORDER_PENALTY_DAYS)
@@ -183,6 +191,7 @@ def source_bom(request: SourceRequest) -> SourcingResult:
     matched = [ln for ln in lines if ln.chosen is not None]
     total_landed = sum(ln.chosen.landed_cost_inr for ln in matched)
     total_duty = sum(ln.chosen.duty.duty_amount_inr for ln in matched)
+    total_recoverable = sum(ln.chosen.duty.recoverable_tax_inr for ln in matched)
     max_lead = max((ln.chosen.effective_lead_time_days for ln in matched), default=0)
     local = sum(1 for ln in matched if ln.chosen.duty.is_domestic)
     imported = len(matched) - local
@@ -193,6 +202,7 @@ def source_bom(request: SourceRequest) -> SourcingResult:
         line_coverage=round(len(matched) / len(lines), 3) if lines else 0.0,
         total_landed_cost_inr=round(total_landed, 2),
         total_duty_inr=round(total_duty, 2),
+        total_recoverable_tax_inr=round(total_recoverable, 2),
         max_lead_time_days=max_lead,
         local_offers_chosen=local,
         imported_offers_chosen=imported,

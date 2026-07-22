@@ -107,6 +107,7 @@ class WooCommerceProvider(CatalogProvider):
             authorized=True,
             region=store.region,
             currency=store.currency,
+            price_includes_gst=str(store.currency).upper() == "INR",
             price_breaks=[PriceBreak(qty=1, unit_price=price)],
             stock=int(stock_qty),
             lead_time_days=3,

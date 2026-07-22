@@ -115,6 +115,7 @@ class LocalCatalogProvider(CatalogProvider):
             authorized=True,
             region=row.region or "IN",
             currency=row.currency or "INR",
+            price_includes_gst=str(row.currency or "INR").upper() == "INR",
             price_breaks=[PriceBreak(qty=1, unit_price=row.price)],
             stock=9999 if row.in_stock else 0,
             lead_time_days=4,

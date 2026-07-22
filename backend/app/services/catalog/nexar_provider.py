@@ -175,6 +175,7 @@ class NexarProvider(CatalogProvider):
             authorized=authorized,
             region=region,
             currency=currency.upper(),
+            price_includes_gst=currency.upper() == "INR",
             price_breaks=breaks,
             stock=int(raw.get("inventoryLevel") or 0),
             lead_time_days=int(raw.get("factoryLeadDays") or 0),

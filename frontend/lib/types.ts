@@ -18,6 +18,8 @@ export interface Offer {
   region: string;
   country_of_origin: string;
   currency: string;
+  price_includes_gst: boolean;
+  gst_rate: number;
   price_breaks: PriceBreak[];
   stock: number;
   lead_time_days: number;
@@ -33,6 +35,11 @@ export interface DutyBreakdown {
   duty_rate: number;
   duty_amount_inr: number;
   shipping_inr: number;
+  assessable_value_cif: number;
+  bcd_amount_inr: number;
+  sws_amount_inr: number;
+  igst_amount_inr: number;
+  recoverable_tax_inr: number;
 }
 
 export interface SourcedOffer {
@@ -73,6 +80,7 @@ export interface SourcingSummary {
   line_coverage: number;
   total_landed_cost_inr: number;
   total_duty_inr: number;
+  total_recoverable_tax_inr: number;
   max_lead_time_days: number;
   local_offers_chosen: number;
   imported_offers_chosen: number;
