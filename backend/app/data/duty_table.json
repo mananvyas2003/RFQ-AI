@@ -1,26 +1,27 @@
 {
-  "_note": "Representative import-duty rates by destination country and HS4 code. NOT legally binding. Rates are basic customs duty as a fraction of customs value. 'default' applies when a specific HS4 is not listed.",
+  "_README": "Rates are placeholders to be verified against the CBIC customs tariff. Only IGST 0.18 and SWS 0.10 are statutory/standard defaults — verify against CBIC tariff; override per HS. Each HS entry is {bcd, igst, sws, aidc}; bcd values are user-owned placeholders and must not be altered casually. 'default' applies when a specific HS4 is not listed.",
+  "_note": "Representative import-duty rates by destination country and HS4 code. NOT legally binding.",
   "IN": {
-    "default": 0.10,
-    "8542": 0.0,
-    "8541": 0.10,
-    "8533": 0.10,
-    "8532": 0.10,
-    "8536": 0.10,
-    "8504": 0.075
+    "default": {"bcd": 0.10, "igst": 0.18, "sws": 0.10, "aidc": 0.0},
+    "8542": {"bcd": 0.0, "igst": 0.18, "sws": 0.10, "aidc": 0.0},
+    "8541": {"bcd": 0.10, "igst": 0.18, "sws": 0.10, "aidc": 0.0},
+    "8533": {"bcd": 0.10, "igst": 0.18, "sws": 0.10, "aidc": 0.0},
+    "8532": {"bcd": 0.10, "igst": 0.18, "sws": 0.10, "aidc": 0.0},
+    "8536": {"bcd": 0.10, "igst": 0.18, "sws": 0.10, "aidc": 0.0},
+    "8504": {"bcd": 0.075, "igst": 0.18, "sws": 0.10, "aidc": 0.0}
   },
   "US": {
-    "default": 0.0,
-    "8542": 0.0,
-    "8541": 0.0,
-    "8533": 0.0
+    "default": {"bcd": 0.0, "igst": 0.18, "sws": 0.10, "aidc": 0.0},
+    "8542": {"bcd": 0.0, "igst": 0.18, "sws": 0.10, "aidc": 0.0},
+    "8541": {"bcd": 0.0, "igst": 0.18, "sws": 0.10, "aidc": 0.0},
+    "8533": {"bcd": 0.0, "igst": 0.18, "sws": 0.10, "aidc": 0.0}
   },
   "GB": {
-    "default": 0.02,
-    "8542": 0.0
+    "default": {"bcd": 0.02, "igst": 0.18, "sws": 0.10, "aidc": 0.0},
+    "8542": {"bcd": 0.0, "igst": 0.18, "sws": 0.10, "aidc": 0.0}
   },
   "DE": {
-    "default": 0.037,
-    "8542": 0.0
+    "default": {"bcd": 0.037, "igst": 0.18, "sws": 0.10, "aidc": 0.0},
+    "8542": {"bcd": 0.0, "igst": 0.18, "sws": 0.10, "aidc": 0.0}
   }
 }
