@@ -29,10 +29,6 @@ _MAX_ALTERNATES = 4
 _BACKORDER_PENALTY_DAYS = 30
 
 
-def _norm_mpn(s: str) -> str:
-    return "".join(ch for ch in (s or "").upper() if ch.isalnum())
-
-
 def _applicable_unit_price(offer: Offer, purchase_qty: int) -> float:
     """Native-currency unit price for the given quantity, honoring price breaks."""
     if not offer.price_breaks:
@@ -91,41 +87,53 @@ def _sort_key(objective: Objective):
 def source_line(line: BomLine, destination_country: str, objective: Objective) -> SourcedLine:
     match = match_line(line)
 
-    # Prefer the user's raw MPN. The mock-catalog matcher is only a fallback
-    # for description-only lines (no MPN on the BOM) — never rewrite a real
-    # user-supplied MPN to a demo-catalog alias, which would miss live stock.
+    # Prefer the user's raw MPN for live APIs, but ALWAYS also try the matched
+    # canonical MPN. The mock catalog keys offers by canonical identity
+    # (NE555P / LM358DR); searching only the raw alias ("NE555" / "lm358")
+    # misses those offers and incorrectly reports unmatched @ 100% confidence.
     raw_mpn = (line.mpn or "").strip()
-    search_mpn = raw_mpn or (match.mpn if match.part is not None else "")
+    canonical_mpn = match.mpn if match.part is not None else ""
     search_desc = (line.description or "").strip()
 
-    if not search_mpn and not search_desc:
-        # Nothing usable to look up anywhere.
-        return SourcedLine(input=line, status=LineStatus.unmatched, match_confidence=match.confidence)
+    search_keys: List[str] = []
+    for key in (raw_mpn, canonical_mpn):
+        if key and key not in search_keys:
+            search_keys.append(key)
+    if not search_keys and search_desc:
+        search_keys.append("")  # description-only lookup
 
-    offers = registry.search(search_mpn, search_desc)
+    if not search_keys:
+        return SourcedLine(
+            input=line,
+            status=LineStatus.unmatched,
+            match_confidence=match.confidence,
+        )
 
-    if match.part is not None and raw_mpn and _norm_mpn(raw_mpn) == _norm_mpn(match.mpn):
-        # User MPN agreed with the local catalog identity.
-        matched_mpn = match.mpn
-        matched_manufacturer = match.manufacturer
-        confidence = match.confidence
-        status = match.status
-    elif match.part is not None and not raw_mpn:
-        # Description-only line resolved via the local catalog.
+    offers: List[Offer] = []
+    for key in search_keys:
+        offers.extend(registry.search(key, search_desc))
+    # Re-sanitize across merged query results (each search already sanitized).
+    offers = registry._sanitize(offers)
+
+    if match.part is not None:
+        # Catalog identity wins; never demote a real match to unmatched just
+        # because the raw string missed an offer key.
         matched_mpn = match.mpn
         matched_manufacturer = match.manufacturer
         confidence = match.confidence
         status = match.status
     elif offers:
-        # A live source recognised this part even though it isn't in the local
-        # catalog. Trust the source's identity for it.
-        matched_mpn = offers[0].mpn or raw_mpn or search_mpn
+        matched_mpn = offers[0].mpn or raw_mpn
         matched_manufacturer = offers[0].manufacturer
-        confidence = match.confidence if match.confidence else 90.0
+        # Honest confidence: reflect the matcher, never invent a 90.0 default.
+        confidence = match.confidence
         status = LineStatus.matched
     else:
-        # Nothing local and no live source had it.
-        return SourcedLine(input=line, status=LineStatus.unmatched, match_confidence=match.confidence)
+        return SourcedLine(
+            input=line,
+            status=LineStatus.unmatched,
+            match_confidence=match.confidence,
+        )
 
     if not offers:
         return SourcedLine(
