@@ -130,8 +130,14 @@ def test_duty_imported_is_nonzero():
 def test_duty_unknown_destination_uses_conservative_default():
     duty = compute_duty(_offer(region="US"), "ZZ", customs_value_inr=1000.0)
     assert duty.is_domestic is False
-    assert duty.duty_rate == 0.10  # conservative default in duty.py
-    assert duty.duty_amount_inr == 100.0
+    assert duty.duty_rate == 0.10  # conservative BCD default in duty.py
+    # BCD is on CIF (goods + freight + insurance), not goods alone.
+    assert duty.assessable_value_cif > 1000.0
+    assert duty.bcd_amount_inr == pytest.approx(0.10 * duty.assessable_value_cif, abs=0.02)
+    assert duty.sws_amount_inr == pytest.approx(0.10 * duty.bcd_amount_inr, abs=0.02)
+    assert duty.duty_amount_inr == pytest.approx(
+        duty.bcd_amount_inr + duty.sws_amount_inr, abs=0.02
+    )
 
 
 # ---------------------------------------------------------------------------

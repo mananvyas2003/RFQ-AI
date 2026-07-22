@@ -45,6 +45,7 @@ def _offer_index() -> dict[str, List[Offer]]:
                     region=raw.get("region", "IN"),
                     country_of_origin=raw.get("country_of_origin", ""),
                     currency=raw.get("currency", "INR"),
+                    price_includes_gst=str(raw.get("currency", "INR")).upper() == "INR",
                     price_breaks=[PriceBreak(**pb) for pb in raw.get("price_breaks", [])],
                     stock=raw.get("stock", 0),
                     lead_time_days=raw.get("lead_time_days", 0),
