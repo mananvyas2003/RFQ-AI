@@ -7,6 +7,8 @@ offers are dropped (consent-first).
 """
 from __future__ import annotations
 
+import logging
+import re
 from typing import List
 
 from app.models import AccessMethod, Offer
@@ -17,6 +19,18 @@ from app.services.catalog.nexar_provider import NexarProvider
 from app.services.catalog.scrape_provider import ScrapeProvider
 from app.services.catalog.shopify_provider import ShopifyProvider
 from app.services.catalog.woocommerce_provider import WooCommerceProvider
+
+logger = logging.getLogger(__name__)
+
+
+def _norm_part(mpn: str) -> str:
+    return re.sub(r"[^A-Z0-9]", "", (mpn or "").upper())
+
+
+def _unit_price_at_one(offer: Offer) -> float:
+    if not offer.price_breaks:
+        return float("inf")
+    return min(b.unit_price for b in offer.price_breaks)
 
 
 class ProviderRegistry:
@@ -57,29 +71,39 @@ class ProviderRegistry:
 
         # Tiers 1-2: query and merge.
         for provider in self._providers_at(max_tier=2):
-            offers.extend(provider.search(mpn, description))
+            try:
+                offers.extend(provider.search(mpn, description))
+            except Exception as exc:  # noqa: BLE001 - one provider must not break sourcing
+                logger.warning("provider %s failed for %r: %s", provider.name, mpn, exc)
 
         # Tier 3: only as a fallback when nothing was found upstream.
         if not offers:
             for provider in self._providers_at(max_tier=3, min_tier=3):
-                offers.extend(provider.search(mpn, description))
+                try:
+                    offers.extend(provider.search(mpn, description))
+                except Exception as exc:  # noqa: BLE001
+                    logger.warning("provider %s failed for %r: %s", provider.name, mpn, exc)
 
         return self._sanitize(offers)
 
     @staticmethod
     def _sanitize(offers: List[Offer]) -> List[Offer]:
-        clean: List[Offer] = []
-        seen: set[tuple[str, str]] = set()
+        """Keep the cheapest offer per (distributor, normalized-part).
+
+        Distinct part identities from the same distributor are preserved;
+        casing/punctuation variants of the same MPN collapse to the lowest
+        unit price rather than first-wins.
+        """
+        best: dict[tuple[str, str], Offer] = {}
         for offer in offers:
             # Consent-first: never surface unauthorized scraped data.
             if offer.access_method == AccessMethod.scrape and not offer.authorized:
                 continue
-            key = (offer.distributor.lower(), offer.mpn.upper())
-            if key in seen:
-                continue
-            seen.add(key)
-            clean.append(offer)
-        return clean
+            key = (offer.distributor.lower(), _norm_part(offer.mpn))
+            prev = best.get(key)
+            if prev is None or _unit_price_at_one(offer) < _unit_price_at_one(prev):
+                best[key] = offer
+        return list(best.values())
 
 
 # Module-level singleton used by the routes.
