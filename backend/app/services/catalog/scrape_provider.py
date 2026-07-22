@@ -13,6 +13,7 @@ catalog (Tier 2) instead of being hit live per BOM line.
 """
 from __future__ import annotations
 
+import logging
 import re
 import threading
 import time
@@ -27,6 +28,7 @@ from app.services.catalog.base import CatalogProvider
 from app.services.catalog.relevance import is_relevant
 from app.services.catalog.stores import scrape_sources
 
+logger = logging.getLogger(__name__)
 _USER_AGENT = "RFQ-AI/1.0 (+sourcing; contact site owner if this is unwanted)"
 
 # Per-host timestamp of the last request, for polite rate limiting.
@@ -99,7 +101,8 @@ class ScrapeProvider(CatalogProvider):
                         got = self._scrape_woo_store_api(source, query, mpn or query)
                     else:
                         got = []
-                except Exception:  # noqa: BLE001 - one source failing must not break others
+                except Exception as exc:  # noqa: BLE001 - one source failing must not break others
+                    logger.warning("scrape %s failed: %s", source.name, exc)
                     got = []
                 # Drop keyword-search false positives: only keep products that
                 # genuinely correspond to the part. An irrelevant hit must not

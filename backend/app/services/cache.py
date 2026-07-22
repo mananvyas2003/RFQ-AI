@@ -6,6 +6,7 @@ API quota. Falls back to "no cache" gracefully if the DB is unavailable.
 """
 from __future__ import annotations
 
+import logging
 from datetime import datetime, timedelta, timezone
 from typing import List, Optional
 
@@ -14,6 +15,8 @@ from sqlalchemy import delete, select
 from app.config import settings
 from app.db import OfferCache, SessionLocal
 from app.models import Offer
+
+logger = logging.getLogger(__name__)
 
 
 def _key(mpn: str) -> str:
@@ -47,7 +50,8 @@ def get_cached_offers(source: str, mpn: str) -> Optional[List[Offer]]:
             import json
 
             return [Offer(**o) for o in json.loads(row.payload)]
-    except Exception:  # noqa: BLE001 - cache must never break the request path
+    except Exception as exc:  # noqa: BLE001 - cache must never break the request path
+        logger.warning("offer cache read failed: %s", exc)
         return None
 
 
@@ -65,5 +69,5 @@ def set_cached_offers(source: str, mpn: str, offers: List[Offer]) -> None:
             )
             db.add(OfferCache(source=source, mpn=key, payload=payload))
             db.commit()
-    except Exception:  # noqa: BLE001 - caching is best-effort
-        pass
+    except Exception as exc:  # noqa: BLE001 - caching is best-effort
+        logger.warning("offer cache write failed: %s", exc)

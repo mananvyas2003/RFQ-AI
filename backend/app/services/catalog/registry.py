@@ -74,7 +74,7 @@ class ProviderRegistry:
             try:
                 offers.extend(provider.search(mpn, description))
             except Exception as exc:  # noqa: BLE001 - one provider must not break sourcing
-                logger.warning("provider %s failed for %r: %s", provider.name, mpn, exc)
+                logger.warning("provider %s failed: %s", provider.name, exc)
 
         # Tier 3: only as a fallback when nothing was found upstream.
         if not offers:
@@ -82,7 +82,7 @@ class ProviderRegistry:
                 try:
                     offers.extend(provider.search(mpn, description))
                 except Exception as exc:  # noqa: BLE001
-                    logger.warning("provider %s failed for %r: %s", provider.name, mpn, exc)
+                    logger.warning("provider %s failed: %s", provider.name, exc)
 
         return self._sanitize(offers)
 

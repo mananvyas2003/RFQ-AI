@@ -9,6 +9,7 @@ returns counts against your account's part limit.
 """
 from __future__ import annotations
 
+import logging
 import time
 from typing import List, Optional
 
@@ -18,6 +19,8 @@ from app.config import settings
 from app.models import AccessMethod, Offer, PriceBreak
 from app.services.cache import get_cached_offers, set_cached_offers
 from app.services.catalog.base import CatalogProvider
+
+logger = logging.getLogger(__name__)
 
 _SEARCH_QUERY = """
 query SearchMpn($q: String!, $limit: Int!, $country: String!) {
@@ -93,7 +96,8 @@ class NexarProvider(CatalogProvider):
 
         try:
             offers = self._query(mpn)
-        except Exception:  # noqa: BLE001 - never break sourcing on a source error
+        except Exception as exc:  # noqa: BLE001 - never break sourcing on a source error
+            logger.warning("nexar search failed: %s", exc)
             return []
 
         set_cached_offers(self.name, mpn, offers)

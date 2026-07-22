@@ -7,6 +7,7 @@ stores are queried.
 """
 from __future__ import annotations
 
+import logging
 from typing import List
 
 import httpx
@@ -17,6 +18,7 @@ from app.services.catalog.base import CatalogProvider
 from app.services.catalog.relevance import is_relevant
 from app.services.catalog.stores import shopify_stores
 
+logger = logging.getLogger(__name__)
 _ADMIN_API_VERSION = "2024-10"
 
 _PRODUCT_QUERY = """
@@ -77,7 +79,8 @@ class ShopifyProvider(CatalogProvider):
         for store in self.stores:
             try:
                 offers.extend(self._search_store(store, mpn))
-            except Exception:  # noqa: BLE001 - one store failing must not break others
+            except Exception as exc:  # noqa: BLE001 - one store failing must not break others
+                logger.warning("shopify store %s failed: %s", store.name, exc)
                 continue
 
         # Keyword search returns loosely-related products; keep only genuine

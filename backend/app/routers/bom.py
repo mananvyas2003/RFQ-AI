@@ -2,9 +2,7 @@
 from __future__ import annotations
 
 import io
-import json
 import logging
-from pathlib import Path
 
 from fastapi import APIRouter, File, HTTPException, UploadFile
 from fastapi.responses import StreamingResponse
@@ -19,7 +17,6 @@ logger = logging.getLogger("rfq.bom")
 
 _MAX_BYTES = 5 * 1024 * 1024  # 5 MB
 _XLSX_MEDIA = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-_DEBUG_PATH = Path(__file__).resolve().parents[2] / "last_source_debug.json"
 
 
 @router.post("/parse", response_model=ParseResponse)
@@ -33,13 +30,8 @@ async def parse(file: UploadFile = File(...)) -> ParseResponse:
         result = parse_bom(file.filename or "bom.csv", content)
     except Exception as exc:  # noqa: BLE001 - surface a clean parse error to the UI
         raise HTTPException(status_code=422, detail=f"Could not parse file: {exc}") from exc
-    logger.warning(
-        "parse file=%s rows=%s mapping=%s sample=%s",
-        file.filename,
-        result.row_count,
-        result.mapping.model_dump(),
-        [ln.model_dump() for ln in result.lines[:5]],
-    )
+    # Counts only — BOM contents are confidential customer IP.
+    logger.info("parse rows=%s", result.row_count)
     return result
 
 
@@ -48,37 +40,12 @@ async def source(request: SourceRequest) -> SourcingResult:
     if not request.lines:
         raise HTTPException(status_code=400, detail="No BOM lines provided.")
     result = source_bom(request)
-    debug = {
-        "input_lines": [ln.model_dump() for ln in request.lines],
-        "summary": result.summary.model_dump(),
-        "results": [
-            {
-                "mpn": ln.input.mpn,
-                "description": ln.input.description,
-                "status": ln.status.value,
-                "matched_mpn": ln.matched_mpn,
-                "distributor": ln.chosen.offer.distributor if ln.chosen else None,
-                "product": (ln.chosen.offer.description if ln.chosen else None),
-            }
-            for ln in result.lines
-        ],
-    }
-    try:
-        _DEBUG_PATH.write_text(json.dumps(debug, indent=2), encoding="utf-8")
-    except Exception:  # noqa: BLE001
-        pass
-    logger.warning(
-        "source coverage=%s/%s lines=%s",
+    # Counts only — never log MPNs, descriptions, or supplier picks.
+    logger.info(
+        "source coverage=%s/%s (%.0f%%)",
         result.summary.lines_matched,
         result.summary.lines_total,
-        [
-            {
-                "mpn": ln.input.mpn,
-                "desc": ln.input.description,
-                "dist": ln.chosen.offer.distributor if ln.chosen else None,
-            }
-            for ln in result.lines
-        ],
+        (result.summary.line_coverage or 0.0) * 100,
     )
     return result
 

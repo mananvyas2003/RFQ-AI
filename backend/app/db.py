@@ -1,8 +1,11 @@
 """Database setup (SQLAlchemy).
 
-Defaults to a local SQLite file (`rfq_ai.db`) so the app is persistent with zero
-setup. Point `DATABASE_URL` at Postgres/MySQL/etc. to use a hosted database
-instead - nothing else in the code changes.
+Defaults to a local SQLite file (`rfq_ai.db`) so offer-cache and the crawled
+catalog persist with zero setup. Point `DATABASE_URL` at Postgres/MySQL/etc.
+to use a hosted database instead - nothing else in the code changes.
+
+Sourcing *runs* themselves are not persisted server-side: the frontend keeps
+the latest result in browser `sessionStorage` only.
 """
 from __future__ import annotations
 
@@ -40,18 +43,6 @@ class OfferCache(Base):
     mpn: Mapped[str] = mapped_column(String(128), index=True)
     payload: Mapped[str] = mapped_column(Text)  # JSON list[Offer]
     fetched_at: Mapped[datetime] = mapped_column(DateTime, default=_utcnow)
-
-
-class SavedRun(Base):
-    """A persisted sourcing run, so results survive a page refresh / restart."""
-
-    __tablename__ = "saved_runs"
-
-    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
-    destination_country: Mapped[str] = mapped_column(String(8), default="IN")
-    objective: Mapped[str] = mapped_column(String(16), default="cost")
-    result_json: Mapped[str] = mapped_column(Text)
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=_utcnow)
 
 
 class ScrapedProduct(Base):
