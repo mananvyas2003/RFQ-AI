@@ -60,7 +60,12 @@ credentials/stores. The demo catalog auto-disables once any real source is live.
 4. **(Optional) Distributor stores** - copy `stores.example.json` to
    `stores.json`, fill in Shopify tokens / WooCommerce keys a distributor issued
    you, and set `STORES_CONFIG=stores.json`.
-5. Restart the server and open http://localhost:8000/status to confirm which
+5. **(Optional) Scraping (Tier 3, last resort)** - set `SCRAPE_ENABLED=true` and
+   add sources under the `"scrape"` section of `stores.json`. Consent-first:
+   only allow-listed sources are read, only via public structured data
+   (Shopify `products.json`), cached + rate-limited, and only when tiers 1-2
+   return nothing for a part.
+6. Restart the server and open http://localhost:8000/status to confirm which
    sources are `enabled: true`.
 
 ## Notes / limitations

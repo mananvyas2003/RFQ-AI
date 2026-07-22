@@ -91,6 +91,7 @@ export interface ColumnMapping {
   manufacturer: string | null;
   quantity: string | null;
   reference: string | null;
+  value: string | null;
   description: string | null;
 }
 

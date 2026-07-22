@@ -40,6 +40,24 @@ class Settings(BaseSettings):
     # Path to a JSON file listing Shopify / WooCommerce stores to query.
     stores_config: str = ""
 
+    # --- Tier 3: scraping (last resort, off by default) --------------------
+    # Master switch. Even when true, only sources listed in the "scrape" section
+    # of STORES_CONFIG are ever fetched (consent-first, per-source allow-list).
+    scrape_enabled: bool = False
+    # Politeness: minimum seconds between requests to the same host.
+    scrape_min_interval_seconds: float = 1.0
+    # Cap how many products we scan per store per lookup.
+    scrape_max_products: int = 250
+    # Relevance gate for scraped hits. Maker stores return keyword-ranked
+    # products, so a search for a resistor can surface a "load cell" that merely
+    # shares the text "10K". When true, a scraped product is only accepted if it
+    # actually corresponds to the part (MPN/core/description overlap), otherwise
+    # the line is reported as "no match" instead of a wrong product.
+    scrape_strict_matching: bool = True
+    # Fraction of the meaningful description tokens (value + component type) that
+    # must appear in the product title for a description-based match to count.
+    scrape_match_min_coverage: float = 0.6
+
     @property
     def nexar_enabled(self) -> bool:
         return bool(self.nexar_client_id and self.nexar_client_secret)

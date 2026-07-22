@@ -18,5 +18,16 @@
       "region": "IN",
       "currency": "INR"
     }
+  ],
+  "scrape": [
+    {
+      "_note": "LAST RESORT. Only list sources you are permitted to read. Requires SCRAPE_ENABLED=true. Reads the store's PUBLIC products.json (Shopify-based stores).",
+      "name": "Example Shopify Store",
+      "base_url": "https://some-store.myshopify.com",
+      "platform": "shopify_json",
+      "region": "IN",
+      "currency": "INR",
+      "lead_time_days": 5
+    }
   ]
 }

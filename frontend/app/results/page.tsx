@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { sourceBom } from "@/lib/api";
+import { exportBom, sourceBom } from "@/lib/api";
 import { inr, leadLabel, pct } from "@/lib/format";
 import type { BomLine, Objective, SourcedLine, SourcedOffer, SourcingResult } from "@/lib/types";
 
@@ -35,7 +35,18 @@ function OfferRow({ o, highlight }: { o: SourcedOffer; highlight?: boolean }) {
         <span className={`badge ${BADGE_STYLES[o.source_badge] ?? "bg-slate-100"}`}>
           {o.source_badge}
         </span>
-        <span className="font-medium text-slate-800">{o.offer.distributor}</span>
+        {o.offer.product_url ? (
+          <a
+            href={o.offer.product_url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="font-medium text-brand-700 hover:underline"
+          >
+            {o.offer.distributor}
+          </a>
+        ) : (
+          <span className="font-medium text-slate-800">{o.offer.distributor}</span>
+        )}
         <span className="text-slate-400">
           ({o.offer.region}{o.offer.country_of_origin ? ` - origin ${o.offer.country_of_origin}` : ""})
         </span>
@@ -72,12 +83,63 @@ export default function ResultsPage() {
   const [request, setRequest] = useState<StoredRequest | null>(null);
   const [expanded, setExpanded] = useState<Set<number>>(new Set());
   const [busy, setBusy] = useState(false);
+  const [exporting, setExporting] = useState(false);
 
   useEffect(() => {
-    const r = sessionStorage.getItem("rfq_result");
-    const q = sessionStorage.getItem("rfq_request");
-    if (r) setResult(JSON.parse(r));
-    if (q) setRequest(JSON.parse(q));
+    let cancelled = false;
+
+    const load = async () => {
+      let storedRequest: StoredRequest | null = null;
+      let storedResult: SourcingResult | null = null;
+
+      try {
+        const q = sessionStorage.getItem("rfq_request");
+        if (q) storedRequest = JSON.parse(q) as StoredRequest;
+      } catch {
+        sessionStorage.removeItem("rfq_request");
+      }
+
+      try {
+        const r = sessionStorage.getItem("rfq_result");
+        if (r) storedResult = JSON.parse(r) as SourcingResult;
+      } catch {
+        sessionStorage.removeItem("rfq_result");
+      }
+
+      if (storedRequest) setRequest(storedRequest);
+
+      // Old sessions often kept a 0%-coverage result from before providers
+      // were fixed. If we still have the BOM lines, re-source automatically.
+      const needsRefresh =
+        !!storedRequest?.lines?.length &&
+        (!storedResult || (storedResult.summary?.lines_matched ?? 0) === 0);
+
+      if (needsRefresh && storedRequest) {
+        setBusy(true);
+        try {
+          const res = await sourceBom({
+            ...storedRequest,
+            objective: storedResult?.objective ?? "cost",
+          });
+          if (!cancelled) {
+            setResult(res);
+            sessionStorage.setItem("rfq_result", JSON.stringify(res));
+          }
+        } catch {
+          if (!cancelled && storedResult) setResult(storedResult);
+        } finally {
+          if (!cancelled) setBusy(false);
+        }
+        return;
+      }
+
+      if (!cancelled && storedResult) setResult(storedResult);
+    };
+
+    void load();
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   const rerun = async (objective: Objective) => {
@@ -89,6 +151,24 @@ export default function ResultsPage() {
       sessionStorage.setItem("rfq_result", JSON.stringify(res));
     } finally {
       setBusy(false);
+    }
+  };
+
+  const downloadExcel = async () => {
+    if (!request || exporting) return;
+    setExporting(true);
+    try {
+      const blob = await exportBom({ ...request, objective: result!.objective });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "rfq_order_sheet.xlsx";
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+    } finally {
+      setExporting(false);
     }
   };
 
@@ -121,6 +201,7 @@ export default function ResultsPage() {
           <p className="mt-1 text-slate-600">
             Shipping to {result.destination_country} - optimized for{" "}
             <span className="font-medium capitalize">{result.objective}</span>. Prices in INR.
+            {busy && <span className="ml-2 text-brand-600">Refreshing sources…</span>}
           </p>
         </div>
         <div className="flex items-center gap-3">
@@ -140,6 +221,13 @@ export default function ResultsPage() {
               </button>
             ))}
           </div>
+          <button
+            onClick={downloadExcel}
+            disabled={exporting || !request}
+            className="btn-primary px-4 py-2 disabled:opacity-50"
+          >
+            {exporting ? "Preparing..." : "Download Excel"}
+          </button>
           <Link href="/upload" className="btn-ghost">
             New BOM
           </Link>
@@ -159,6 +247,60 @@ export default function ResultsPage() {
           value={pct(s.line_coverage)}
           sub={`${s.lines_matched} of ${s.lines_total} lines matched`}
         />
+      </section>
+
+      <section className="card overflow-hidden">
+        <div className="border-b border-slate-100 px-5 py-3">
+          <h2 className="font-semibold text-slate-900">Order sheet</h2>
+          <p className="text-xs text-slate-500">
+            Chosen supplier per line with a direct link to the product page.
+          </p>
+        </div>
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead className="bg-slate-50 text-left text-xs uppercase tracking-wide text-slate-500">
+              <tr>
+                <th className="px-5 py-2 font-medium">Component</th>
+                <th className="px-3 py-2 font-medium">Qty</th>
+                <th className="px-3 py-2 font-medium">Supplier</th>
+                <th className="px-3 py-2 text-right font-medium">Unit price</th>
+                <th className="px-5 py-2 text-right font-medium">Link</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-100">
+              {result.lines.map((line: SourcedLine) => (
+                <tr key={`sheet-${line.input.line_no}`} className="hover:bg-slate-50">
+                  <td className="px-5 py-2 font-medium text-slate-800">
+                    {line.matched_mpn || line.input.mpn || line.input.description || "Unknown part"}
+                  </td>
+                  <td className="px-3 py-2 text-slate-500">{line.input.quantity}</td>
+                  <td className="px-3 py-2 text-slate-700">
+                    {line.chosen ? line.chosen.offer.distributor : (
+                      <span className="text-red-500">No supplier</span>
+                    )}
+                  </td>
+                  <td className="px-3 py-2 text-right text-slate-600">
+                    {line.chosen ? inr(line.chosen.unit_price_inr) : "-"}
+                  </td>
+                  <td className="px-5 py-2 text-right">
+                    {line.chosen?.offer.product_url ? (
+                      <a
+                        href={line.chosen.offer.product_url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="badge bg-brand-50 text-brand-700 hover:bg-brand-100"
+                      >
+                        Add to cart
+                      </a>
+                    ) : (
+                      <span className="text-slate-400">-</span>
+                    )}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </section>
 
       <section className="space-y-3">

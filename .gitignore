@@ -1,0 +1,16 @@
+# OS / editor
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+
+# Local debug dumps
+**/last_source_debug.json
+
+# Python / Node (also covered in subfolder gitignores)
+**/.venv/
+**/__pycache__/
+**/node_modules/
+**/.next/
+*.pyc
+*.db

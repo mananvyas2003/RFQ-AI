@@ -11,6 +11,7 @@ from typing import List
 
 from app.models import AccessMethod, Offer
 from app.services.catalog.base import CatalogProvider
+from app.services.catalog.local_catalog_provider import LocalCatalogProvider
 from app.services.catalog.mock_provider import MockProvider
 from app.services.catalog.nexar_provider import NexarProvider
 from app.services.catalog.scrape_provider import ScrapeProvider
@@ -24,18 +25,24 @@ class ProviderRegistry:
             nexar = NexarProvider()          # tier 1 (activates with credentials)
             shopify = ShopifyProvider()      # tier 2 (activates with configured stores)
             woo = WooCommerceProvider()      # tier 2 (activates with configured stores)
+            local = LocalCatalogProvider()   # tier 2 (crawled scrape catalog, DB)
+            scrape = ScrapeProvider()        # tier 3 (live scrape, last-resort fallback)
 
             mock = MockProvider()            # tier 1 (built-in demo data)
-            # Once any real source is live, stop mixing in the demo catalog so
-            # results are genuinely real.
-            mock.enabled = not (nexar.enabled or shopify.enabled or woo.enabled)
+            # Once ANY real source is live (incl. scraping), stop mixing in the
+            # demo catalog so results are genuinely real.
+            mock.enabled = not (
+                nexar.enabled or shopify.enabled or woo.enabled
+                or local.enabled or scrape.enabled
+            )
 
             providers = [
                 mock,
                 nexar,
                 shopify,
                 woo,
-                ScrapeProvider(),            # tier 3 (disabled by default)
+                local,
+                scrape,
             ]
         self.providers = providers
 

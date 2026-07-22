@@ -29,9 +29,28 @@ def _raw() -> dict:
         return json.load(fh)
 
 
+def _clean(entries: List[dict]) -> List[dict]:
+    """Drop comment keys (starting with '_') and skip placeholder entries that
+    have no base_url, so example/commented rows don't create bogus sources."""
+    cleaned: List[dict] = []
+    for entry in entries or []:
+        if not isinstance(entry, dict):
+            continue
+        stripped = {k: v for k, v in entry.items() if not k.startswith("_")}
+        if not stripped.get("base_url"):
+            continue
+        cleaned.append(stripped)
+    return cleaned
+
+
 def shopify_stores() -> List[dict]:
-    return _raw().get("shopify", []) or []
+    return _clean(_raw().get("shopify", []))
 
 
 def woocommerce_stores() -> List[dict]:
-    return _raw().get("woocommerce", []) or []
+    return _clean(_raw().get("woocommerce", []))
+
+
+def scrape_sources() -> List[dict]:
+    """Tier-3 allow-list: only these sources may ever be scraped."""
+    return _clean(_raw().get("scrape", []))

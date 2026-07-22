@@ -28,6 +28,10 @@ export default function UploadPage() {
   const handleFile = useCallback(async (file: File) => {
     setError("");
     setBusy(true);
+    // Drop any previous sourcing run so the results page can't show a
+    // stale 0%-coverage BOM from an earlier session.
+    sessionStorage.removeItem("rfq_result");
+    sessionStorage.removeItem("rfq_request");
     try {
       const res = await parseBom(file);
       setParsed(res);
@@ -73,6 +77,7 @@ export default function UploadPage() {
       router.push("/results");
     } catch (e) {
       setError(e instanceof Error ? e.message : "Failed to source BOM.");
+    } finally {
       setBusy(false);
     }
   };
@@ -260,6 +265,10 @@ export default function UploadPage() {
             <button className="btn-primary px-6 py-3" disabled={busy || lines.length === 0} onClick={runSourcing}>
               {busy ? "Sourcing..." : "Find best sources"}
             </button>
+            <p className="basis-full text-right text-xs text-slate-500">
+              Review the rows above, then click <span className="font-medium">Find best sources</span> —
+              suppliers are fetched on that step (not on upload).
+            </p>
           </div>
         </div>
       )}

@@ -14,6 +14,7 @@ import httpx
 from app.models import AccessMethod, Offer, PriceBreak
 from app.services.cache import get_cached_offers, set_cached_offers
 from app.services.catalog.base import CatalogProvider
+from app.services.catalog.relevance import is_relevant
 from app.services.catalog.stores import woocommerce_stores
 
 
@@ -48,7 +49,7 @@ class WooCommerceProvider(CatalogProvider):
 
         cached = get_cached_offers(self.name, mpn)
         if cached is not None:
-            return cached
+            return [o for o in cached if is_relevant(mpn, description, o.description)]
 
         offers: List[Offer] = []
         for store in self.stores:
@@ -57,6 +58,9 @@ class WooCommerceProvider(CatalogProvider):
             except Exception:  # noqa: BLE001 - one store failing must not break others
                 continue
 
+        # Keyword search returns loosely-related products; keep only genuine
+        # matches so a wrong item becomes an honest "no match".
+        offers = [o for o in offers if is_relevant(mpn, description, o.description)]
         set_cached_offers(self.name, mpn, offers)
         return offers
 

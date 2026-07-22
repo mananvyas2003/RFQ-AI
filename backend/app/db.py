@@ -54,6 +54,30 @@ class SavedRun(Base):
     created_at: Mapped[datetime] = mapped_column(DateTime, default=_utcnow)
 
 
+class ScrapedProduct(Base):
+    """One product harvested from a distributor's public catalog by the crawler.
+
+    This is the searchable local catalog: BOM lookups query this table instead of
+    hitting the live sites, and the crawler refreshes it from time to time.
+    """
+
+    __tablename__ = "scraped_products"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    source: Mapped[str] = mapped_column(String(64), index=True)  # distributor name
+    title: Mapped[str] = mapped_column(String(512), default="")
+    sku: Mapped[str] = mapped_column(String(128), default="", index=True)
+    vendor: Mapped[str] = mapped_column(String(128), default="")
+    price: Mapped[float] = mapped_column(default=0.0)
+    currency: Mapped[str] = mapped_column(String(8), default="INR")
+    in_stock: Mapped[bool] = mapped_column(default=True)
+    region: Mapped[str] = mapped_column(String(8), default="IN")
+    product_url: Mapped[str] = mapped_column(String(1024), default="")
+    # Lower-cased, alnum+space normalized haystack used for fast token matching.
+    search_text: Mapped[str] = mapped_column(Text, default="", index=True)
+    updated_at: Mapped[datetime] = mapped_column(DateTime, default=_utcnow, index=True)
+
+
 def init_db() -> None:
     """Create tables if they don't exist. Safe to call on every startup."""
     Base.metadata.create_all(bind=engine)

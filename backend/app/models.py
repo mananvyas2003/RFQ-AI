@@ -136,6 +136,9 @@ class ColumnMapping(BaseModel):
     manufacturer: Optional[str] = None
     quantity: Optional[str] = None
     reference: Optional[str] = None
+    # "Value" (e.g. 10K / 0.1uF) and free-text Description are tracked
+    # separately so the parser can merge them instead of picking one.
+    value: Optional[str] = None
     description: Optional[str] = None
 
 

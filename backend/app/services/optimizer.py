@@ -29,6 +29,10 @@ _MAX_ALTERNATES = 4
 _BACKORDER_PENALTY_DAYS = 30
 
 
+def _norm_mpn(s: str) -> str:
+    return "".join(ch for ch in (s or "").upper() if ch.isalnum())
+
+
 def _applicable_unit_price(offer: Offer, purchase_qty: int) -> float:
     """Native-currency unit price for the given quantity, honoring price breaks."""
     if not offer.price_breaks:
@@ -87,19 +91,27 @@ def _sort_key(objective: Objective):
 def source_line(line: BomLine, destination_country: str, objective: Objective) -> SourcedLine:
     match = match_line(line)
 
-    # Decide which MPN to query the data sources with: prefer a confident local
-    # catalog match, otherwise fall back to the raw MPN the user provided so live
-    # sources (Nexar/platform APIs) can resolve parts not in the local catalog.
+    # Prefer the user's raw MPN. The mock-catalog matcher is only a fallback
+    # for description-only lines (no MPN on the BOM) — never rewrite a real
+    # user-supplied MPN to a demo-catalog alias, which would miss live stock.
     raw_mpn = (line.mpn or "").strip()
-    search_mpn = match.mpn if match.part is not None else raw_mpn
+    search_mpn = raw_mpn or (match.mpn if match.part is not None else "")
+    search_desc = (line.description or "").strip()
 
-    if not search_mpn:
-        # No local match and no usable MPN to look up anywhere.
+    if not search_mpn and not search_desc:
+        # Nothing usable to look up anywhere.
         return SourcedLine(input=line, status=LineStatus.unmatched, match_confidence=match.confidence)
 
-    offers = registry.search(search_mpn, line.description)
+    offers = registry.search(search_mpn, search_desc)
 
-    if match.part is not None:
+    if match.part is not None and raw_mpn and _norm_mpn(raw_mpn) == _norm_mpn(match.mpn):
+        # User MPN agreed with the local catalog identity.
+        matched_mpn = match.mpn
+        matched_manufacturer = match.manufacturer
+        confidence = match.confidence
+        status = match.status
+    elif match.part is not None and not raw_mpn:
+        # Description-only line resolved via the local catalog.
         matched_mpn = match.mpn
         matched_manufacturer = match.manufacturer
         confidence = match.confidence
@@ -107,7 +119,7 @@ def source_line(line: BomLine, destination_country: str, objective: Objective) -
     elif offers:
         # A live source recognised this part even though it isn't in the local
         # catalog. Trust the source's identity for it.
-        matched_mpn = offers[0].mpn or raw_mpn
+        matched_mpn = offers[0].mpn or raw_mpn or search_mpn
         matched_manufacturer = offers[0].manufacturer
         confidence = match.confidence if match.confidence else 90.0
         status = LineStatus.matched

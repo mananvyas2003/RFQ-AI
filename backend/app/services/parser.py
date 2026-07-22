@@ -10,6 +10,10 @@ from rapidfuzz import fuzz
 from app.models import BomLine, ColumnMapping, ParseResponse
 
 # Header synonyms per target field, checked before fuzzy matching.
+# IMPORTANT: "value" and "description" are separate. Many BOMs have BOTH
+# (Value=10K, Description="Resistor 10K 0603"). Mapping "value" into
+# description used to discard the richer Description column and leave the
+# matcher with a bare "10K" that can't be sourced reliably.
 _SYNONYMS: dict[str, List[str]] = {
     "mpn": [
         "mpn", "manufacturer part number", "manufacturer part no", "mfr part",
@@ -27,8 +31,11 @@ _SYNONYMS: dict[str, List[str]] = {
         "reference", "refdes", "ref des", "designator", "designators",
         "references", "ref", "reference designator",
     ],
+    "value": [
+        "value", "val", "comp value", "component value",
+    ],
     "description": [
-        "description", "desc", "value", "comment", "comments", "details",
+        "description", "desc", "comment", "comments", "details",
         "part description", "component description", "footprint",
     ],
 }
@@ -104,6 +111,21 @@ def _cell(row: pd.Series, col: Optional[str]) -> str:
     return "" if s.lower() == "nan" else s
 
 
+def _merge_value_description(value: str, description: str) -> str:
+    """Combine BOM Value + Description into one search-friendly string.
+
+    Prefers the longer free-text Description, and prepends Value when it
+    adds signal that isn't already present in the description text.
+    """
+    value = (value or "").strip()
+    description = (description or "").strip()
+    if value and description:
+        if value.lower() in description.lower():
+            return description
+        return f"{value} {description}".strip()
+    return description or value
+
+
 def parse_bom(filename: str, content: bytes) -> ParseResponse:
     df = _read_dataframe(filename, content)
     df = df.dropna(how="all")
@@ -111,15 +133,21 @@ def parse_bom(filename: str, content: bytes) -> ParseResponse:
     mapping = _detect_columns(headers)
 
     lines: List[BomLine] = []
-    for i, (_, row) in enumerate(df.iterrows(), start=1):
+    for _, row in df.iterrows():
         mpn = _cell(row, mapping.mpn)
+        value = _cell(row, mapping.value)
         description = _cell(row, mapping.description)
+        # Merge Value + Description so search gets both the short value
+        # ("10K") and the human label ("Resistor 10K 0603").
+        description = _merge_value_description(value, description)
         # Skip fully empty rows.
         if not mpn and not description:
             continue
         lines.append(
             BomLine(
-                line_no=i,
+                # Sequential position in the output list, so skipped empty rows
+                # don't create gaps in the numbering shown to users.
+                line_no=len(lines) + 1,
                 mpn=mpn,
                 manufacturer=_cell(row, mapping.manufacturer),
                 quantity=_to_int(_cell(row, mapping.quantity)) if mapping.quantity else 1,

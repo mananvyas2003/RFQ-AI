@@ -40,4 +40,18 @@ export async function sourceBom(params: {
   return handle<SourcingResult>(res);
 }
 
+export async function exportBom(params: {
+  lines: BomLine[];
+  destination_country: string;
+  objective: Objective;
+}): Promise<Blob> {
+  const res = await fetch(`${API_BASE}/bom/export`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(params),
+  });
+  if (!res.ok) throw new Error(`Export failed (${res.status})`);
+  return res.blob();
+}
+
 export { API_BASE };

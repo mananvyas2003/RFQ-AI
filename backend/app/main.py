@@ -7,7 +7,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.db import init_db
-from app.routers import bom
+from app.routers import bom, catalog
 
 
 @asynccontextmanager
@@ -26,16 +26,16 @@ app = FastAPI(
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "http://localhost:3000",
-        "http://127.0.0.1:3000",
-    ],
+    # Allow the Next.js dev server on any local port (it falls back to 3001+
+    # when 3000 is taken), so the browser isn't CORS-blocked.
+    allow_origin_regex=r"http://(localhost|127\.0\.0\.1):\d+",
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
 app.include_router(bom.router)
+app.include_router(catalog.router)
 
 
 @app.get("/", tags=["health"])
