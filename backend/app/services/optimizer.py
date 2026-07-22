@@ -54,28 +54,43 @@ def _source_badge(offer: Offer, destination_country: str) -> str:
 
 
 def _evaluate(offer: Offer, required_qty: int, destination_country: str) -> SourcedOffer:
-    purchase_qty = max(required_qty, offer.moq)
-    unit_native = _applicable_unit_price(offer, purchase_qty)
-    unit_inr = to_inr(unit_native, offer.currency)
-    line_cost_inr = unit_inr * purchase_qty
+    """Pick purchase qty = max(required, moq), or round up to a price break
+    when that lowers total landed cost.
+    """
+    base_qty = max(required_qty, offer.moq)
+    candidate_qtys = {base_qty}
+    for brk in offer.price_breaks:
+        if brk.qty > base_qty:
+            candidate_qtys.add(brk.qty)
 
-    duty = compute_duty(offer, destination_country, line_cost_inr)
-    landed = line_cost_inr + duty.duty_amount_inr + duty.shipping_inr
+    best: SourcedOffer | None = None
+    for purchase_qty in candidate_qtys:
+        unit_native = _applicable_unit_price(offer, purchase_qty)
+        unit_inr = to_inr(unit_native, offer.currency)
+        line_cost_inr = unit_inr * purchase_qty
 
-    in_stock = offer.stock >= purchase_qty
-    effective_lead = offer.lead_time_days + (0 if in_stock else _BACKORDER_PENALTY_DAYS)
+        duty = compute_duty(offer, destination_country, line_cost_inr)
+        landed = line_cost_inr + duty.duty_amount_inr + duty.shipping_inr
 
-    return SourcedOffer(
-        offer=offer,
-        source_badge=_source_badge(offer, destination_country),
-        purchase_qty=purchase_qty,
-        unit_price_inr=round(unit_inr, 4),
-        line_cost_inr=round(line_cost_inr, 2),
-        duty=duty,
-        landed_cost_inr=round(landed, 2),
-        effective_lead_time_days=effective_lead,
-        in_stock=in_stock,
-    )
+        in_stock = offer.stock >= purchase_qty
+        effective_lead = offer.lead_time_days + (0 if in_stock else _BACKORDER_PENALTY_DAYS)
+
+        candidate = SourcedOffer(
+            offer=offer,
+            source_badge=_source_badge(offer, destination_country),
+            purchase_qty=purchase_qty,
+            unit_price_inr=round(unit_inr, 4),
+            line_cost_inr=round(line_cost_inr, 2),
+            duty=duty,
+            landed_cost_inr=round(landed, 2),
+            effective_lead_time_days=effective_lead,
+            in_stock=in_stock,
+        )
+        if best is None or candidate.landed_cost_inr < best.landed_cost_inr:
+            best = candidate
+
+    assert best is not None  # candidate_qtys is never empty
+    return best
 
 
 def _sort_key(objective: Objective):
