@@ -56,6 +56,10 @@ class Offer(BaseModel):
     country_of_origin: str = ""  # manufacturing origin (informational)
 
     currency: str = "INR"
+    # Indian retail/scrape/local INR offers are typically GST-inclusive.
+    # Imported / foreign-currency offers should set this False.
+    price_includes_gst: bool = True
+    gst_rate: float = 0.18  # statutory/standard default — verify; override per offer
     price_breaks: List[PriceBreak] = Field(default_factory=list)
     stock: int = 0
     lead_time_days: int = 0
@@ -76,12 +80,19 @@ class BomLine(BaseModel):
 
 
 class DutyBreakdown(BaseModel):
-    customs_value_inr: float
+    customs_value_inr: float  # goods value in INR (as priced / FX-converted)
     is_domestic: bool
     hs_code: str = ""
-    duty_rate: float = 0.0
-    duty_amount_inr: float = 0.0
+    duty_rate: float = 0.0  # BCD rate applied (0 for domestic)
+    duty_amount_inr: float = 0.0  # non-recoverable customs = BCD + SWS
     shipping_inr: float = 0.0
+    # CIF cascade (imported); domestic leaves CIF at 0
+    assessable_value_cif: float = 0.0
+    bcd_amount_inr: float = 0.0
+    sws_amount_inr: float = 0.0
+    igst_amount_inr: float = 0.0
+    # GST (domestic) or IGST (imported) — recoverable via ITC, not rankable
+    recoverable_tax_inr: float = 0.0
 
 
 class SourcedOffer(BaseModel):
@@ -113,8 +124,9 @@ class SourcingSummary(BaseModel):
     lines_total: int = 0
     lines_matched: int = 0
     line_coverage: float = 0.0
-    total_landed_cost_inr: float = 0.0
-    total_duty_inr: float = 0.0
+    total_landed_cost_inr: float = 0.0  # non-recoverable total (ranking basis)
+    total_duty_inr: float = 0.0  # non-recoverable customs (BCD + SWS)
+    total_recoverable_tax_inr: float = 0.0  # GST/IGST reclaimable via ITC
     max_lead_time_days: int = 0
     local_offers_chosen: int = 0
     imported_offers_chosen: int = 0
